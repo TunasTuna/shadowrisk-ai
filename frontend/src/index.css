@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Theme palettes (RGB channel triplets consumed by Tailwind tokens) ---- */
+:root {
+  color-scheme: dark;
+  --brand: 16 185 129;
+  --brand-soft: 52 211 153;
+  --brand-deep: 5 150 105;
+  --term-bg: 11 15 25;
+  --term-deep: 7 10 16;
+  --term-line: 30 39 53;
+  --term-soft: 20 27 38;
+  --fg: 203 213 225;
+  --fg-bright: 241 245 249;
+  --fg-dim: 148 163 184;
+  --fg-faint: 100 116 139;
+  --fg-ghost: 71 85 105;
+}
+
+[data-theme="amber"] {
+  --brand: 245 158 11;
+  --brand-soft: 251 191 36;
+  --brand-deep: 217 119 6;
+  --term-bg: 18 14 8;
+  --term-deep: 11 8 4;
+  --term-line: 56 44 24;
+  --term-soft: 30 24 13;
+  --fg: 231 224 208;
+  --fg-bright: 250 245 232;
+  --fg-dim: 176 166 146;
+  --fg-faint: 132 122 104;
+  --fg-ghost: 92 84 70;
+}
+
+[data-theme="ice"] {
+  --brand: 34 211 238;
+  --brand-soft: 103 232 249;
+  --brand-deep: 8 145 178;
+  --term-bg: 8 16 26;
+  --term-deep: 4 10 18;
+  --term-line: 26 46 64;
+  --term-soft: 14 26 40;
+  --fg: 200 220 235;
+  --fg-bright: 237 246 252;
+  --fg-dim: 143 170 190;
+  --fg-faint: 96 122 142;
+  --fg-ghost: 64 86 104;
+}
+
+[data-theme="violet"] {
+  --brand: 139 92 246;
+  --brand-soft: 167 139 250;
+  --brand-deep: 109 40 217;
+  --term-bg: 16 12 30;
+  --term-deep: 10 7 20;
+  --term-line: 50 40 74;
+  --term-soft: 28 22 46;
+  --fg: 216 210 236;
+  --fg-bright: 244 240 252;
+  --fg-dim: 160 152 190;
+  --fg-faint: 116 108 146;
+  --fg-ghost: 78 72 104;
+}
+
+[data-theme="crimson"] {
+  --brand: 244 63 94;
+  --brand-soft: 251 113 133;
+  --brand-deep: 225 29 72;
+  --term-bg: 22 12 16;
+  --term-deep: 14 7 11;
+  --term-line: 64 36 44;
+  --term-soft: 36 20 26;
+  --fg: 232 208 212;
+  --fg-bright: 250 240 242;
+  --fg-dim: 182 152 158;
+  --fg-faint: 138 108 116;
+  --fg-ghost: 96 72 78;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--term-line)) rgb(var(--term-deep));
+  }
+
+  body {
+    @apply bg-term-bg text-fg;
+  }
+}
+
+/* ---- Sharp, high-density terminal scrollbars ---- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--term-deep));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--term-line));
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--brand));
+}
+
+/* ---- Terminal window canvas ---- */
+.term-canvas {
+  background-color: rgb(var(--term-deep));
+  background-image:
+    linear-gradient(to right, rgb(var(--term-line) / 0.6) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--term-line) / 0.6) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ---- Print / Export PDF ---- */
+@media print {
+  @page {
+    margin: 14mm;
+    size: A4;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .print-window {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    z-index: auto !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .print-static {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+  }
+
+  .credit-paper,
+  .credit-paper * {
+    color: #0f172a !important;
+    text-shadow: none !important;
+    border-color: #d4d4d8 !important;
+    background: transparent !important;
+  }
+}
