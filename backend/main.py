@@ -26,12 +26,22 @@ llm = OpenAI(
 )
 MODEL = os.getenv("NEBIUS_MODEL")
 
+EXCLUDE_DOMAINS = [
+    "facebook.com", "linkedin.com", "indeed.com", "glassdoor.com",
+    "reddit.com", "x.com", "twitter.com", "youtube.com",
+    "prnewswire.com", "globenewswire.com", "businesswire.com",
+    "accessnewswire.com", "seekingalpha.com", "investing.com",
+    "stocktitan.net", "marketbeat.com", "zacks.com",
+]
+
 TOPICS = {
-    "Supply chain": "supply chain disruption shortage",
-    "Legal": "lawsuit litigation investigation fraud",
-    "Labor": "strike layoffs union labor dispute",
-    "Regulatory": "regulation fine compliance government",
+    "Supply chain": "supply chain disruption supplier shortage component dependency",
+    "Legal": "lawsuit litigation investigation SEC probe fraud settlement",
+    "Labor": "strike layoffs union dispute workforce reduction severance",
+    "Regulatory": "regulation fine compliance enforcement ban tariff export control",
 }
+
+MAX_CHARS_PER_RESULT = 1500
 
 SYSTEM_PROMPT = """You are a cynical forensic credit analyst. Assume companies
 hide problems. Using ONLY the raw web data provided, write an institutional-grade
@@ -91,40 +101,85 @@ def analyze(req: AnalyzeRequest):
         raise HTTPException(status_code=400, detail="Company name required")
 
     chunks = []
-    try:
-        for label, terms in TOPICS.items():
+    seen_urls = set()
+    failed_topics = []
+
+    # 1. Graceful Degradation: One failed topic shouldn't crash the whole audit
+    for label, terms in TOPICS.items():
+        try:
             res = tavily.search(
                 query=f"{company} {terms}",
                 topic="news",
                 time_range="year",
                 max_results=5,
-                exclude_domains=["facebook.com", "linkedin.com", "indeed.com", "boeing.com",
-                 "reddit.com", "prnewswire.com", "globenewswire.com",
-                 "businesswire.com", "accessnewswire.com"],
+                exclude_domains=EXCLUDE_DOMAINS,
             )
-            for r in res.get("results", []):
-                chunks.append(f"[{label}] {r['title']} ({r['url']})\n{r['content']}")
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Tavily error: {e}")
+        except Exception as e:
+            failed_topics.append(f"{label}: {e}")
+            continue
+
+        # 2. Deduplication & Truncation: Prevents false confidence from repeated articles
+        for r in res.get("results", []):
+            url = r.get("url", "")
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
+            content = (r.get("content") or "")[:MAX_CHARS_PER_RESULT]
+            chunks.append(f"[{label}] {r.get('title', '')} ({url})\n{content}")
 
     raw_text = "\n\n".join(chunks)
+
+    # 3. Empty Context Guard: Prevents the LLM from hallucinating a report on zero data
+    if not raw_text.strip():
+        return {
+            "company": company,
+            "score": 50,
+            "report": (
+                f"# ALTERNATIVE CREDIT AUDIT: {company.upper()}\n\n"
+                "**Shadow Risk Score:** 50 (UNRATED)\n\n"
+                "## Evidence Status\n"
+                "NO ADVERSE SIGNALS RETRIEVED IN CURRENT SCRAPE. "
+                "Insufficient corroborated public news data to underwrite. "
+                "Absence of evidence is not evidence of safety.\n\n"
+                "*Automated analysis from public web data. Not financial advice.*"
+            ),
+        }
+
+    context_note = ""
+    if failed_topics:
+        context_note = (
+            "\n\nNOTE: These pillars returned no retrieval this run: "
+            + ", ".join(t.split(":")[0] for t in failed_topics)
+            + ". Mark them NO DATA RETRIEVED. Do not rate them from memory."
+        )
 
     try:
         resp = llm.chat.completions.create(
             model=MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Today's date: {date.today().isoformat()}\nCompany: {company}\n\nRaw data:\n{raw_text}"},
+                {"role": "user", "content": (
+                    f"Today's date: {date.today().isoformat()}\n"
+                    f"Company: {company}\n\nRaw data:\n{raw_text}{context_note}"
+                )},
             ],
             temperature=0.1,
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"LLM error: {e}")
 
-    report = resp.choices[0].message.content
+    report = resp.choices[0].message.content or ""
 
-    match = re.search(r"SHADOW_RISK_SCORE:\s*(\d{1,3})", report)
+    # 4. Robust Score Parsing: Line-based filtering prevents the score from leaking into the markdown
+    match = re.search(r"SHADOW_RISK_SCORE:\s*(\d{1,3})", report, re.IGNORECASE)
     score = int(match.group(1)) if match else None
-    report = re.sub(r"\n+[*_\s]*SHADOW_RISK_SCORE:\s*\d{1,3}[*_\s]*$", "", report).strip()
+    if score is not None:
+        score = max(0, min(100, score))
+
+    # Strip any line containing the score marker to ensure clean markdown output
+    report = "\n".join(
+        line for line in report.splitlines()
+        if "SHADOW_RISK_SCORE" not in line.upper()
+    ).strip()
 
     return {"company": company, "score": score, "report": report}
