@@ -78,6 +78,22 @@ export default function SettingsPanel({ settings, onChange, onClearData }) {
         </div>
       </Field>
 
+      <Field label="API endpoint">
+        <input
+          type="text"
+          autoComplete="off"
+          spellCheck="false"
+          value={settings.apiBase}
+          onChange={(event) => onChange({ apiBase: event.target.value })}
+          placeholder="http://127.0.0.1:8000"
+          className="w-full border border-term-line bg-term-deep px-2 py-1.5 text-fg-bright placeholder:text-fg-ghost focus:border-brand/70 focus:outline-none"
+        />
+        <p className="mt-1.5 text-[10px] normal-case leading-tight text-fg-faint">
+          Backend base URL. Paste your ngrok tunnel here (e.g.
+          https://xxxx.ngrok-free.app) to reach a remote API. Calls POST /analyze.
+        </p>
+      </Field>
+
       <Field label="Default ticker">
         <input
           type="text"

@@ -172,26 +172,35 @@ export default function ShadowRiskDashboard() {
     const target = query.trim().toUpperCase();
     if (!target || status === "running") return;
 
+    const base = String(settings.apiBase || "").trim().replace(/\/+$/, "");
+    const endpoint = `${base}/analyze`;
+
     setEntity(target);
     setMarkdown("");
     setStatus("running");
     pushLog("SYS", `QUERY_DISPATCH: ${target}`);
     pushLog("NET", `SEC_SCRAPE_INIT: ${target}`);
+    pushLog("NET", `POST ${endpoint}`);
 
     try {
-      // Point this to wherever your Python dev is running the backend
-      const response = await fetch('http://127.0.0.1:8000/api/audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ticker: target, company_name: target })
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Bypass the ngrok free-tier browser warning interstitial
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({ company: target }),
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
 
-      // NOTE: Confirm with Python Dev if the key is 'report', 'markdown', or 'markdown_report'
-      setMarkdown(data.markdown_report || data.report || data.markdown);
+      setMarkdown(data.report || data.markdown_report || data.markdown || "");
+      if (typeof data.score === "number") {
+        pushLog("AUDIT", `SHADOW_RISK_SCORE: ${data.score}`);
+      }
       setStatus("ready");
       pushLog("SYS_OK", `RENDER_COMPLETE: ${target}`);
       setSources((prev) => ({ ...prev, lastAuditAt: new Date().toISOString() }));

@@ -6,11 +6,14 @@ export const KEYS = {
   sources: `${NS}.sources`,
 };
 
+const ENV_API_BASE = import.meta.env?.VITE_API_URL || "http://127.0.0.1:8000";
+
 export const DEFAULT_SETTINGS = {
   theme: "terminal",
   restoreSession: true,
   statusBar: true,
   defaultTicker: "",
+  apiBase: ENV_API_BASE,
 };
 
 export function load(key, fallback) {
