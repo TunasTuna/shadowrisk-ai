@@ -21,10 +21,10 @@ app.add_middleware(
 
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 llm = OpenAI(
-    base_url=os.getenv("NEBIUS_BASE_URL"),
-    api_key=os.getenv("NEBIUS_API_KEY"),
+    base_url=os.getenv("LLM_BASE_URL"),
+    api_key=os.getenv("LLM_API_KEY"),
 )
-MODEL = os.getenv("NEBIUS_MODEL")
+MODEL = os.getenv("LLM_MODEL")
 
 EXCLUDE_DOMAINS = [
     "facebook.com", "linkedin.com", "indeed.com", "glassdoor.com",

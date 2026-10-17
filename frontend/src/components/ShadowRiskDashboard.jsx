@@ -1,4 +1,4 @@
-import {
+﻿import {
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -8,7 +8,6 @@ import {
 } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { buildCreditPaper } from "../lib/buildCreditPaper.js";
 import { runBootChecks } from "../lib/bootChecks.js";
 import SettingsPanel from "./SettingsPanel.jsx";
 import { applyTheme } from "../lib/theme.js";
