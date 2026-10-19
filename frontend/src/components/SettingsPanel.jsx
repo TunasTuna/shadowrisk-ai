@@ -1,5 +1,3 @@
-import { THEMES } from "../lib/theme.js";
-
 const TOGGLES = [
   {
     key: "restoreSession",
@@ -27,33 +25,8 @@ function Field({ label, children }) {
 export default function SettingsPanel({ settings, onChange, onClearData }) {
   return (
     <div className="h-full overflow-y-auto text-[11px]">
-      <Field label="Theme">
-        <div className="grid gap-1">
-          {THEMES.map((theme) => {
-            const active = settings.theme === theme.id;
-            return (
-              <button
-                key={theme.id}
-                type="button"
-                onClick={() => onChange({ theme: theme.id })}
-                className={`flex items-center gap-2 border px-2 py-1.5 text-left uppercase tracking-[0.14em] transition-colors ${active
-                  ? "border-brand/60 bg-brand/10 text-white"
-                  : "border-term-line bg-term-deep text-fg-dim hover:border-fg-faint hover:text-fg"
-                  }`}
-              >
-                <span
-                  className="h-3 w-3 shrink-0 border border-black/50"
-                  style={{ background: theme.accent }}
-                  aria-hidden="true"
-                />
-                <span>{theme.label}</span>
-                {active && <span className="ml-auto text-brand">ACTIVE</span>}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
 
+      {/* Startup Toggles */}
       <Field label="Startup">
         <div className="grid gap-1">
           {TOGGLES.map((toggle) => (
@@ -78,6 +51,7 @@ export default function SettingsPanel({ settings, onChange, onClearData }) {
         </div>
       </Field>
 
+      {/* API Endpoint */}
       <Field label="API endpoint">
         <input
           type="text"
@@ -89,11 +63,14 @@ export default function SettingsPanel({ settings, onChange, onClearData }) {
           className="w-full border border-term-line bg-term-deep px-2 py-1.5 text-fg-bright placeholder:text-fg-ghost focus:border-brand/70 focus:outline-none"
         />
         <p className="mt-1.5 text-[10px] normal-case leading-tight text-fg-faint">
-          Backend base URL. Paste your ngrok tunnel here (e.g.
-          https://xxxx.ngrok-free.app) to reach a remote API. Calls POST /analyze.
+          Backend base URL. Default <code className="text-fg-bright">/api</code> routes through the
+          Vite dev proxy to the local FastAPI backend. For a remote tunnel, append{" "}
+          <code className="text-fg-bright">/api</code> to the tunnel URL (e.g.
+          https://xxxx.trycloudflare.com/api). Calls POST /analyze.
         </p>
       </Field>
 
+      {/* Default Ticker */}
       <Field label="Default ticker">
         <input
           type="text"
@@ -106,6 +83,7 @@ export default function SettingsPanel({ settings, onChange, onClearData }) {
         />
       </Field>
 
+      {/* Clear Data Button */}
       <div className="px-3 py-3">
         <button
           type="button"

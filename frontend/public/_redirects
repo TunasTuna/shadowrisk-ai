@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA fallback: serve index.html for any non-asset path.
+# Required so client-side navigation (and deep links) resolve on preview deploys.
+/* /index.html 200

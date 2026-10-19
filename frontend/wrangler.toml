@@ -1,0 +1,10 @@
+# Cloudflare Pages deployment config for the ShadowRisk AI frontend.
+# Deploy command:
+#   npx wrangler pages deploy dist --project-name shadowrisk-preview
+#
+# Build-time env (override with --var or set in the Cloudflare dashboard):
+#   VITE_API_URL - public base URL of the ShadowRisk FastAPI backend
+#                  (e.g. a cloudflared quick tunnel) that the UI posts /analyze to.
+
+name = "shadowrisk-preview"
+pages_build_output_dir = "dist"

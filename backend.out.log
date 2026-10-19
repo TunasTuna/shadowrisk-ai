@@ -1,0 +1,8 @@
+INFO:     127.0.0.1:61279 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61281 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61286 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     203.211.77.213:0 - "GET /openapi.json HTTP/1.1" 200 OK
+Retrieved 37 total chunks across 4 topics
+INFO:     203.211.77.213:0 - "POST /analyze HTTP/1.1" 502 Bad Gateway
+Retrieved 37 total chunks across 4 topics
+INFO:     203.211.77.213:0 - "POST /analyze HTTP/1.1" 502 Bad Gateway

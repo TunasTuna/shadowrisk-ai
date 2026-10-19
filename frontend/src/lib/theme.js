@@ -1,21 +1,21 @@
+// frontend/src/lib/theme.js
+
 export const THEMES = [
-  { id: "terminal", label: "TERMINAL GREEN", accent: "#10B981" },
-  { id: "amber", label: "AMBER CRT", accent: "#F59E0B" },
-  { id: "ice", label: "ICE BLUE", accent: "#22D3EE" },
-  { id: "violet", label: "VIOLET DESK", accent: "#8B5CF6" },
-  { id: "crimson", label: "CRIMSON RISK", accent: "#F43F5E" },
+  { id: "dark", label: "TERMINAL DARK", accent: "rgb(16, 185, 129)" },
+  { id: "amber", label: "AMBER", accent: "rgb(245, 158, 11)" },
+  { id: "ice", label: "ICE", accent: "rgb(34, 211, 238)" },
+  { id: "violet", label: "VIOLET", accent: "rgb(139, 92, 246)" },
+  { id: "crimson", label: "CRIMSON", accent: "rgb(244, 63, 94)" },
 ];
 
-export const DEFAULT_THEME = "terminal";
+export function applyTheme(themeId) {
+  const root = document.documentElement;
 
-export function isThemeId(id) {
-  return THEMES.some((t) => t.id === id);
-}
-
-export function applyTheme(id) {
-  const safe = isThemeId(id) ? id : DEFAULT_THEME;
-  if (typeof document !== "undefined") {
-    document.documentElement.setAttribute("data-theme", safe);
+  // If it's the default dark theme, remove the attribute to fall back to :root
+  if (themeId === "dark" || !themeId) {
+    root.removeAttribute("data-theme");
+  } else {
+    // Otherwise, set the data-theme attribute, which your index.css already listens to
+    root.setAttribute("data-theme", themeId);
   }
-  return safe;
 }

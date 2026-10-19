@@ -1,0 +1,8 @@
+INFO:     127.0.0.1:51601 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     203.211.77.213:0 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53402 - "GET /openapi.json HTTP/1.1" 200 OK
+Retrieved 40 total chunks across 4 topics
+INFO:     127.0.0.1:53414 - "POST /analyze HTTP/1.1" 200 OK
+Retrieved 38 total chunks across 4 topics
+INFO:     127.0.0.1:56791 - "POST /analyze HTTP/1.1" 200 OK
