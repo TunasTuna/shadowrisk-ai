@@ -1,56 +1,166 @@
-# 🛡️ ShadowRisk AI 
-### Institutional-Grade Forensic Credit Intelligence
+# ShadowRisk AI
 
-> *"Absence of evidence is not evidence of safety."*
+**Automated Forensic Credit Intelligence**
 
-ShadowRisk AI is an automated, institutional-grade credit risk analysis engine. It aggregates real-time market data, performs deep-web forensic scraping, and leverages advanced LLMs to generate brutal, evidence-based, 3-to-4-page credit risk papers complete with quantifiable risk scores and actionable institutional recommendations.
+ShadowRisk AI is a local-first, automated credit risk analysis engine. It aggregates real-time market data, performs deep-web forensic scraping, and leverages large language models to generate dense, evidence-based, 3-to-4-page institutional credit risk papers. 
 
----
-
-## 🚀 Key Features
-
-- **📊 Real-Time Market Integration**: Fetches live financial metrics (Price, Market Cap, P/E, Beta, 52W Range) via `yfinance` to ground the LLM's analysis in current market realities.
-- **🕸️ Deep Web Retrieval**: Utilizes Tavily Search to scrape up to 10 high-signal news/audit results per risk pillar (Supply Chain, Legal, Labor, Regulatory), filtering out noise and PR fluff.
-- **🧠 Bulletproof LLM Pipeline**: 
-  - 16,000-token output budget to prevent truncation of dense institutional reports.
-  - Custom `_extract_json` parser with brace-matching logic.
-  - **Self-Repair Retry Loop**: Automatically detects malformed/truncated JSON and feeds the partial output back to the model to guarantee a parseable response.
-- **🖨️ Flawless PDF Export**: Dual-container architecture (`screen-only` vs `print-only`). Completely isolates the dark-mode terminal UI from a clean, light-mode, A4-portrait institutional PDF. Uses pure inline-CSS bar charts to prevent browser print-engine slicing.
-- **🔄 Auto-Fallback Resilience**: Built-in provider fallback logic ensures demo continuity. If the primary LLM API hits rate limits, it seamlessly switches to a backup provider (e.g., OpenRouter) without crashing.
+The system is designed to mimic the output and rigor of a sell-side credit research desk. It evaluates companies across four core risk pillars (Supply Chain, Legal, Labor, Regulatory), provides quantifiable risk scores, and outputs structured evidence tables with actionable institutional recommendations.
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## Architecture & Pipeline
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React, Vite, Tailwind CSS, ReactMarkdown |
-| **Backend** | Python, FastAPI, Uvicorn |
-| **Data & AI** | Tavily API, `yfinance`, OpenAI SDK (OpenRouter/Nebius compatible) |
-| **DevOps** | Git, `.env` isolation, Auto-fallback routing |
+The application is split into a FastAPI backend and a React frontend. The data pipeline operates in the following sequence:
 
----
-
-## ⚙️ How It Works
-
-1. **Input**: User enters a Company Name and optional Ticker Symbol (e.g., `Boeing`, `BA`).
-2. **Market Data**: Backend instantly queries Yahoo Finance for live market metrics.
-3. **Deep Scraping**: Tavily executes 4 targeted queries (Supply Chain, Legal, Labor, Regulatory), deduplicates URLs, and chunks the top results.
-4. **LLM Synthesis**: The aggregated data + market context is fed to the LLM with a strict, cynical forensic analyst persona prompt.
-5. **Self-Repair**: The backend validates the JSON output. If truncated, it auto-repairs.
-6. **Rendering**: Frontend displays a Bloomberg-style terminal UI with a pure-CSS risk exposure chart and a dense markdown report.
-7. **Export**: One-click PDF generation yields a clean, multi-page, boardroom-ready credit memo.
+1. **Market Data Ingestion:** The backend queries Yahoo Finance (`yfinance`) for real-time equity metrics (Price, Market Cap, P/E, Beta, 52W Range) to ground the analysis in current market realities.
+2. **Deep Web Retrieval:** Tavily Search executes four targeted queries across the distinct risk pillars. It filters out PR fluff, deduplicates URLs, and chunks the top 10 results per pillar to ensure deep evidence gathering.
+3. **LLM Synthesis:** The aggregated context and market data are injected into a strict, forensic-analyst persona prompt. The model is constrained to output a highly structured JSON object containing the markdown report and the pillar breakdown.
+4. **Self-Repair & Validation:** The backend uses a custom brace-matching JSON parser with a 16,000-token output budget. If the LLM truncates the output, the system automatically feeds the partial output back to the model to complete the JSON structure.
+5. **Frontend Rendering & Export:** The React frontend renders a high-density terminal UI. For PDF generation, it utilizes a dual-container DOM architecture (`screen-only` vs `print-only`) to isolate the dark-mode interface from a clean, A4-portrait institutional document.
 
 ---
 
-## 🛠️ Getting Started
+## Key Engineering Decisions
 
-### Prerequisites
-- Python 3.10+
-- Node.js 18+ & npm
-- API Keys for [Tavily](https://tavily.com/) and an OpenAI-compatible provider (e.g., [Nebius](https://nebius.com/) or [OpenRouter](https://openrouter.ai/))
+* **No Charting Libraries:** SVG-based charting libraries were intentionally removed. SVGs break unpredictably during browser pagination. The risk exposure charts are built using pure inline CSS flexbox, ensuring they render perfectly in PDF exports without page-break slicing.
+* **Backend Score Calculation:** The final Shadow Risk Score is not generated by the LLM. It is calculated on the backend using a weighted algorithm (Supply Chain: 30%, Legal: 25%, Labor: 20%, Regulatory: 25%) to guarantee 100% mathematical accuracy.
+* **Provider Agnosticism:** The backend uses the OpenAI Python SDK but is configured to accept any OpenAI-compatible base URL. This allows seamless switching between providers (e.g., Nebius, OpenRouter) via environment variables.
+* **Auto-Fallback Routing:** If the primary LLM API key is missing or hits a rate limit, the backend automatically routes the request to a configured fallback provider to prevent demo failures.
 
-### 1. Clone the Repository
+---
+
+## Prerequisites
+
+* Python 3.10 or higher
+* Node.js 18+ and npm
+* A Tavily API key (for web search)
+* An API key for an OpenAI-compatible LLM provider (e.g., Nebius, OpenRouter)
+
+---
+
+## Environment Configuration (API Keys)
+
+API keys are managed via a `.env` file located in the `backend/` directory. **Do not commit this file to version control.**
+
+1. Navigate to the `backend/` folder.
+2. Create a new file named `.env`.
+3. Paste the following structure into the file and replace the placeholders with your actual keys:
+
+```env
+# ==========================================
+# 1. TAVILY (Required for web scraping)
+# ==========================================
+TAVILY_API_KEY=tvly-your_actual_tavily_key_here
+
+# ==========================================
+# 2. PRIMARY LLM PROVIDER
+# ==========================================
+LLM_BASE_URL=https://api.nebius.com/v1
+LLM_API_KEY=your_actual_llm_key_here
+LLM_MODEL=your_actual_model_name_here
+
+# ==========================================
+# 3. FALLBACK LLM PROVIDER (Optional)
+# ==========================================
+OPENROUTER_API_KEY=sk-or-v1-your_openrouter_key_here
+OPENROUTER_MODEL=google/gemini-2.5-flash
+OPENROUTER_REFERER=http://localhost:5173
+OPENROUTER_TITLE=ShadowRisk AI
+```
+
+---
+
+## Installation & Setup
+
+### 1. Backend Setup
+
+Open your terminal, navigate to the backend directory, and set up a Python virtual environment:
+
 ```bash
-git clone https://github.com/TunasTuna/ShadowRisk-ai.git
-cd ShadowRisk-ai
+cd backend
+python -m venv .venv
+
+# Activate the virtual environment
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# Install dependencies
+pip install fastapi uvicorn tavily-python openai python-dotenv yfinance
+```
+
+### 2. Frontend Setup
+
+Open a **new** terminal window, navigate to the frontend directory, and install the Node dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+---
+
+## Running the Application
+
+You must run both the backend and frontend servers concurrently in separate terminals.
+
+**Terminal 1: Start the Backend**
+```bash
+cd backend
+# Ensure your virtual environment is activated (.venv\Scripts\activate)
+uvicorn main:app --reload --port 8000
+```
+*The API will be available at `http://127.0.0.1:8000`.*
+
+**Terminal 2: Start the Frontend**
+```bash
+cd frontend
+npm run dev
+```
+*The application will be available at `http://localhost:5173`.*
+
+---
+
+## Using the Application & PDF Export
+
+1. **Analysis:** Enter a company name (e.g., `Boeing`) and its ticker symbol (e.g., `BA`) in the Query Terminal. Click `[ RUN CREDIT ANALYSIS ]`.
+2. **Review:** The left panel will display the live scraping logs. The right panel will render the Market Data card, the CSS Risk Pillar chart, and the full markdown report.
+3. **PDF Export:** Click the `Export PDF` button in the top right corner. 
+
+**Crucial Print Dialog Settings:**
+To ensure the PDF renders correctly as a professional document with intact charts, you **must** adjust the browser's print dialog settings before saving:
+* **Margins:** Set to `Default` or `None`.
+* **Options -> Headers and footers:** **UNCHECK** (Removes the browser URL and page numbers).
+* **Options -> Background graphics:** **CHECK** (Strictly required for the CSS bar charts and table borders to render).
+
+---
+
+## Project Structure
+
+```text
+ShadowRisk-ai/
+── backend/
+│   ├── main.py              # FastAPI server, Tavily/yfinance logic, LLM pipeline
+│   ├── .env                 # API keys (ignored by git)
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ShadowRiskDashboard.jsx  # Main UI, state management, print isolation
+│   │   │   └── SettingsPanel.jsx        # Configuration UI
+│   │   ├── lib/
+│   │   │   ├── bootChecks.js            # EDGAR/Connectivity probes
+│   │   │   ├── storage.js               # LocalStorage persistence
+│   │   │   └── theme.js                 # Theme definitions
+│   │   ├── App.jsx
+│   │   └── index.css        # Tailwind directives and CSS variables
+│   ├── package.json
+│   └── tailwind.config.js
+└── README.md
+```
+
+---
+
+## Disclaimer
+
+This software is provided for educational and research purposes only. The output generated by ShadowRisk AI is automated analysis derived from public web data. It does not constitute financial, investment, or legal advice. The authors assume no liability for decisions made based on the output of this tool.
